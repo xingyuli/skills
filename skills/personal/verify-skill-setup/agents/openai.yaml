@@ -1,0 +1,3 @@
+interface:
+  display_name: "Verify Skill Setup"
+  short_description: "Check, install, and live-verify a skill's prerequisites"

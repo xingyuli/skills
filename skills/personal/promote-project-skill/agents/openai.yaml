@@ -1,0 +1,5 @@
+interface:
+  display_name: "Promote Project Skill"
+  short_description: "Move a validated project-local skill into this repo"
+policy:
+  allow_implicit_invocation: false

@@ -21,7 +21,9 @@ DESTS=("$HOME/.claude/skills" "$HOME/.agents/skills")
 # directory, so both are skipped here, same as everywhere else non-promoted
 # skills are kept out. `in-progress/` IS still linked: it's public on purpose,
 # feedback wanted, and this local install is exactly where that feedback loop
-# runs.
+# runs. `personal/` IS also still linked: it's not promoted (no README/plugin
+# entry, needs internal tooling a public installer wouldn't have), but daily
+# reuse across projects is the entire reason it exists.
 names=()
 srcs=()
 while IFS= read -r -d '' skill_md; do
