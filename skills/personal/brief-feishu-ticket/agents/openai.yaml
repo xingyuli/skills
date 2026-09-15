@@ -1,0 +1,3 @@
+interface:
+  display_name: "Brief Feishu Ticket"
+  short_description: "Brief one Feishu Project issue via meegle"
