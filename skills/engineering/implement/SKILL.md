@@ -14,4 +14,6 @@ Run typechecking regularly, single test files regularly, and the full test suite
 
 Once done, call the Skill tool with "code-review" to review the work.
 
+Fix every breach the Standards report marks against a documented standard. Re-run the test that covers that breach. A Spec disagreement stays for the user.
+
 Suggest commit message cover your work, DO NOT directly commit on behalf of user.
