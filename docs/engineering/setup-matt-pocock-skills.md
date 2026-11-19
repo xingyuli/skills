@@ -1,6 +1,6 @@
 ## What it does
 
-`setup-matt-pocock-skills` answers three questions about one repo: where issues live, what the triage labels are called, and where the domain docs sit. It records the answers as markdown files under `docs/agents/`.
+`setup-matt-pocock-skills` answers four questions about one repo: where issues live, what the triage labels are called, where the domain docs sit, and whether beyond-local-file projects local files into the repo. It records the answers as markdown files under `docs/agents/`.
 
 Those files are the only thing that varies between repos. The skills themselves are identical everywhere. They read `docs/agents/issue-tracker.md` at run time and do what it says. That is why the set is not tied to GitHub, and why you never edit a skill file to point it at another tracker. Invoking it with "link the skills to a custom issue tracker" works with anything you can connect to programmatically, with no changes to the skills.
 
@@ -21,19 +21,21 @@ It writes into the repo you run it in:
 | `issue-tracker.md` | `docs/agents/` |
 | `domain.md` | `docs/agents/` |
 | `triage-labels.md` | `docs/agents/`, only when the `triage` skill is installed |
+| `blf.md` | `docs/agents/`, only when you say the repo's local files are managed by beyond-local-file |
 | An `## Agent skills` block | whichever of `CLAUDE.md` or `AGENTS.md` already exists |
 
 You commit all of it as markdown. There is no user-level or global mode. The config lives in the repo, so every repo gets its own copy.
 
-## The three decisions
+## The decisions
 
-It starts each section with the recommended answer, and skips any question its exploration already answered. Most runs need only two confirmations.
+It starts each section with the recommended answer, and skips any question its exploration already answered. Most runs need the tracker confirmation, the label confirmation, and a no on local files.
 
 | Decision | What it proposes | When it asks |
 | --- | --- | --- |
 | **Issue tracker** | the one matching your `git remote` | always, because this is the one real choice |
 | **Triage labels** | keep the five canonical names (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`) | only if the `triage` skill is installed |
 | **Domain docs** | single-context: one `GLOSSARY.md` plus `docs/adr/` at the root | only if it spots monorepo signals, and then it offers a multi-context `GLOSSARY-MAP.md` |
+| **Local files** | no. The repo's git is the only copy | when `docs/agents/blf.md` is absent. Yes writes that file from a seed and adds a `### Local files` pointer. The seed tells the agent how to resolve the hub file on the current machine. It stores no command name and no hub path |
 
 The tracker options:
 
@@ -71,7 +73,7 @@ It doesn't. `docs/agents/triage-labels.md` is a *mapping*: it tells `/triage` wh
 
 **Can I configure the other skills' behaviour here ([grilling](https://www.aihero.dev/ai-coding-dictionary/grilling) cadence, question format, tone)?**
 
-No. It configures three things: tracker, labels, doc layout. Users have asked to make it the place for per-user preferences. The answer is that skills stay opinionated and take no per-user config. Preferences belong in your `CLAUDE.md` as plain instructions, which every skill already reads.
+No. It configures the tracker, the labels, the doc layout, and whether beyond-local-file projects local files into the repo. That last answer defaults to no. Users have asked to make it the place for per-user preferences. The answer is that skills stay opinionated and take no per-user config. Preferences belong in your `CLAUDE.md` as plain instructions, which every skill already reads.
 
 **Can I keep the config in `~/.claude` instead of committing it to every repo?**
 
@@ -83,7 +85,7 @@ One long-standing complaint says yes, in these words: *"having a skill to set up
 
 ## It's working if
 
-- `docs/agents/issue-tracker.md` and `docs/agents/domain.md` exist, plus `triage-labels.md` if `triage` is installed.
+- `docs/agents/issue-tracker.md` and `docs/agents/domain.md` exist, plus `triage-labels.md` if `triage` is installed, plus `blf.md` if you said the repo uses beyond-local-file.
 - An `## Agent skills` section appears in the instruction file your harness reads, with a one-line summary pointing at each of those files.
 - The tracker it proposed matches the remote you use, and the label strings match labels that exist in your tracker.
 - Afterwards, `/to-tickets` publishes without asking you where issues live, and `/triage` applies labels rather than inventing them.

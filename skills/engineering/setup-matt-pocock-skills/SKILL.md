@@ -1,6 +1,6 @@
 ---
 name: setup-matt-pocock-skills
-description: "Configure this repo for the engineering skills: set up its issue tracker, triage label vocabulary, and domain doc layout. Run once before first use of the other engineering skills."
+description: "Configure this repo for the engineering skills: set up its issue tracker, triage label vocabulary, domain doc layout, and, when the repo uses it, beyond-local-file projections. Run once before first use of the other engineering skills."
 disable-model-invocation: true
 ---
 
@@ -11,6 +11,7 @@ Scaffold the per-repo configuration that the engineering skills assume:
 - **Issue tracker**: where issues live (GitHub by default; local markdown is also supported out of the box)
 - **Triage labels**: the strings used for the five canonical triage roles
 - **Domain docs**: where `GLOSSARY.md` and ADRs live, and the consumer rules for reading them
+- **Local files**: whether beyond-local-file projects files into this repo, and how a commit reaches the hub copy
 
 This is a prompt-driven skill, not a deterministic script. Explore, present what you found, confirm with the user, then write.
 
@@ -25,6 +26,7 @@ Look at the current repo to understand its starting state. Read whatever exists;
 - `GLOSSARY.md` and `GLOSSARY-MAP.md` at the repo root, and the legacy `CONTEXT.md` / `CONTEXT-MAP.md`. If a legacy file exists, offer to `git mv` it to its `GLOSSARY` name and rewrite those names in `docs/agents/domain.md`.
 - `docs/adr/` and any `src/*/docs/adr/` directories
 - `docs/agents/`: does this skill's prior output already exist?
+- `docs/agents/blf.md`: when this file exists, Section D is already answered.
 - `.scratch/`: a sign that a local-markdown issue tracker convention is already in use
 - Is the `triage` skill installed? (a `triage` skill folder alongside this one, or `triage` in your available skills.) This decides whether Section B runs at all.
 - Monorepo signals: a `pnpm-workspace.yaml`, a `workspaces` field in `package.json`, or a populated `packages/*` with its own `src/`. These are present only in a genuinely large multi-package repo; their absence means single-context, which is almost every repo.
@@ -33,7 +35,7 @@ Look at the current repo to understand its starting state. Read whatever exists;
 
 Summarise what's present and what's missing. Then take the sections in order. One section, one answer, then the next.
 
-Lead each section with the recommended answer so the user can accept it in a word. Give a one-line explainer only when the choice genuinely branches; skip the section entirely when exploration already settled it (Section B when `triage` isn't installed, Section C when there's no monorepo).
+Lead each section with the recommended answer so the user can accept it in a word. Give a one-line explainer only when the choice genuinely branches; skip the section entirely when exploration already settled it (Section B when `triage` isn't installed, Section C when there's no monorepo, Section D when `docs/agents/blf.md` exists).
 
 **Section A: Issue tracker.**
 
@@ -62,12 +64,23 @@ The defaults are the five canonical roles, each label string equal to its name: 
 
 Offer **multi-context** (a root `GLOSSARY-MAP.md` pointing to per-context `GLOSSARY.md` files) only when exploration found monorepo signals. Then confirm which layout they want.
 
+**Section D: Local files.** Skip this section when `docs/agents/blf.md` already exists.
+
+Ask exactly one question:
+
+> Does this repo have local files managed by beyond-local-file? (recommended: **no**)
+
+On **no**, omit the `### Local files` sub-block and do not write `docs/agents/blf.md`.
+
+On **yes**, add the sub-block and write `docs/agents/blf.md` from [blf.md](./blf.md). The seed is the same in every repo. The answer recorded is yes. The file does not store a command name or a hub path.
+
 ### 3. Confirm and edit
 
 Show the user a draft of:
 
 - The `## Agent skills` block to add to whichever of `CLAUDE.md` / `AGENTS.md` is being edited (see step 4 for selection rules)
 - The contents of `docs/agents/issue-tracker.md`, `docs/agents/domain.md`, and `docs/agents/triage-labels.md` (the last only when `triage` is installed)
+- The contents of `docs/agents/blf.md` when Section D's answer is yes
 
 Let them edit before writing.
 
@@ -99,9 +112,15 @@ The block:
 ### Domain docs
 
 [one-line summary of layout: "single-context" or "multi-context"]. See `docs/agents/domain.md`.
+
+### Local files
+
+A path missing from `git status`, or a commit the user asked for, may be a beyond-local-file projection. See `docs/agents/blf.md`.
 ```
 
 Include the `### Triage labels` sub-block, and write `docs/agents/triage-labels.md`, only when `triage` is installed and Section B ran. When it isn't, both are omitted.
+
+Include the `### Local files` sub-block, and write `docs/agents/blf.md` from [blf.md](./blf.md), only when Section D ran and the user said yes. When it didn't, both are omitted.
 
 When Section B ran on GitHub or GitLab, create each configured label the tracker lacks (`gh label create` / `glab label create`).
 
@@ -112,9 +131,10 @@ Then write the docs files using the seed templates in this skill folder as a sta
 - [issue-tracker-local.md](./issue-tracker-local.md): local-markdown issue tracker
 - [triage-labels.md](./triage-labels.md): label mapping (only if `triage` is installed)
 - [domain.md](./domain.md): domain doc consumer rules + layout
+- [blf.md](./blf.md): beyond-local-file projections and hub commits (only if Section D's answer is yes)
 
 For "other" issue trackers, write `docs/agents/issue-tracker.md` from scratch using the user's description.
 
 ### 5. Done
 
-Tell the user the setup is complete and which engineering skills will now read from these files. Mention they can edit `docs/agents/*.md` directly later; re-running this skill is only necessary if they want to switch issue trackers or restart from scratch.
+Tell the user the setup is complete and which engineering skills will now read from these files. Mention they can edit `docs/agents/*.md` directly later; re-running this skill is only necessary if they want to switch issue trackers, record that the repo uses beyond-local-file, or restart from scratch.
