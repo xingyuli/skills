@@ -68,11 +68,20 @@ Offer **multi-context** (a root `GLOSSARY-MAP.md` pointing to per-context `GLOSS
 
 Ask exactly one question:
 
-> Does this repo have local files managed by beyond-local-file? (recommended: **no**)
+> Which command runs beyond-local-file on this machine? (recommended: `<candidate>`; answer `none` if this repo has no local files managed by it)
 
-On **no**, omit the `### Local files` sub-block and do not write `docs/agents/blf.md`.
+`<candidate>` is `$BLF_CMD` when that variable is set, else `blf`. The machine may run an unreleased build under another name (for example `blf_dev`), so ask even when the candidate exists. When the candidate is not on `PATH`, recommend `none`.
 
-On **yes**, add the sub-block and write `docs/agents/blf.md` from [blf.md](./blf.md). The seed is the same in every repo. The answer recorded is yes. The file does not store a command name or a hub path.
+On **none**, omit the `### Local files` sub-block and do not write `docs/agents/blf.md`.
+
+On a command, run `<command> managed` from the repo root. It prints JSON. `<command> managed --schema` describes every field if you need it. Then:
+
+- **It exits non-zero** (command not found, a release older than `managed`, daemon not running): show the error and suggest answering **none**. Treat the repo as not managed by beyond-local-file: omit the sub-block and do not write `docs/agents/blf.md`. The user can re-run this skill once the command works.
+- **`managed` is false**: tell the user beyond-local-file does not manage this directory, and omit the sub-block. They can re-run after fixing the mapping or starting the daemon.
+- **`managed` is true and `is_target_root` is false**: the answer came from a parent directory. Show `target` and ask whether setup is meant for `target`. When it is not, stop this section and tell the user to run setup from `target`.
+- **`managed` is true**: list each managed project's `name` and `items` in the summary for step 3, and add the sub-block.
+
+Write `docs/agents/blf.md` from [blf.md](./blf.md). The seed is the same in every repo. The file does not store a command name, a project path, or an item list. The command name belongs to the machine, not the repo.
 
 ### 3. Confirm and edit
 
@@ -80,7 +89,7 @@ Show the user a draft of:
 
 - The `## Agent skills` block to add to whichever of `CLAUDE.md` / `AGENTS.md` is being edited (see step 4 for selection rules)
 - The contents of `docs/agents/issue-tracker.md`, `docs/agents/domain.md`, and `docs/agents/triage-labels.md` (the last only when `triage` is installed)
-- The contents of `docs/agents/blf.md` when Section D's answer is yes
+- The contents of `docs/agents/blf.md` when Section D adds the sub-block
 
 Let them edit before writing.
 
@@ -120,7 +129,7 @@ A path missing from `git status`, or a commit the user asked for, may be a beyon
 
 Include the `### Triage labels` sub-block, and write `docs/agents/triage-labels.md`, only when `triage` is installed and Section B ran. When it isn't, both are omitted.
 
-Include the `### Local files` sub-block, and write `docs/agents/blf.md` from [blf.md](./blf.md), only when Section D ran and the user said yes. When it didn't, both are omitted.
+Include the `### Local files` sub-block, and write `docs/agents/blf.md` from [blf.md](./blf.md), only when Section D adds the sub-block. Otherwise both are omitted.
 
 When Section B ran on GitHub or GitLab, create each configured label the tracker lacks (`gh label create` / `glab label create`).
 
@@ -131,7 +140,7 @@ Then write the docs files using the seed templates in this skill folder as a sta
 - [issue-tracker-local.md](./issue-tracker-local.md): local-markdown issue tracker
 - [triage-labels.md](./triage-labels.md): label mapping (only if `triage` is installed)
 - [domain.md](./domain.md): domain doc consumer rules + layout
-- [blf.md](./blf.md): beyond-local-file projections and hub commits (only if Section D's answer is yes)
+- [blf.md](./blf.md): beyond-local-file projections and hub commits (only if Section D adds the sub-block)
 
 For "other" issue trackers, write `docs/agents/issue-tracker.md` from scratch using the user's description.
 
